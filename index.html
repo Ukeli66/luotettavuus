@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="fi"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Tietoetsivä – arvioi tiedon luotettavuus</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;font-family:"Segoe UI",Arial,sans-serif;color:#1b2333;
+background:radial-gradient(circle at 15% 20%,#3a6df0 0,transparent 40%),radial-gradient(circle at 85% 80%,#9b4dff 0,transparent 45%),#141a3a;font-size:20px}
+.wrap{max-width:1150px;margin:auto;padding:28px 24px}
+header{display:flex;align-items:center;gap:16px;color:#fff;margin-bottom:18px}
+header .logo{font-size:3em;filter:drop-shadow(0 4px 8px #0006)}
+header h1{margin:0;font-size:2.3em;letter-spacing:.5px}
+header p{margin:2px 0 0;opacity:.8}
+.card{background:#fff;border-radius:24px;padding:34px;box-shadow:0 20px 50px #0006;animation:pop .35s ease}
+@keyframes pop{from{transform:translateY(16px) scale(.98);opacity:0}to{transform:none;opacity:1}}
+.top{display:flex;justify-content:space-between;align-items:center;font-weight:700;font-size:1.05em}
+.badge{background:#eef1ff;color:#3a4ad0;padding:8px 16px;border-radius:30px}
+.progress{height:14px;background:#e6e9f5;border-radius:10px;margin:16px 0 26px;overflow:hidden}
+.progress div{height:100%;background:linear-gradient(90deg,#3a6df0,#9b4dff);transition:width .4s}
+.post{display:flex;gap:24px;border-radius:20px;padding:28px;background:linear-gradient(135deg,#f6f8ff,#eef0fb);border:2px solid #dfe4f7}
+.icon{font-size:4.2em;line-height:1}
+.type{display:inline-block;background:#1b2333;color:#fff;border-radius:8px;padding:4px 12px;font-size:.8em;font-weight:600}
+.meta{color:#5c6680;margin:10px 0;font-size:.9em}
+.text{font-size:1.3em;line-height:1.45;font-weight:500}
+.btns{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:26px}
+button{font:inherit;font-weight:700;border:0;border-radius:16px;padding:20px 14px;cursor:pointer;transition:transform .12s,box-shadow .12s;box-shadow:0 6px 0 #0003}
+button:hover:not(:disabled){transform:translateY(-3px);box-shadow:0 9px 0 #0003}
+button:active:not(:disabled){transform:translateY(2px);box-shadow:0 2px 0 #0003}
+button:disabled{opacity:.35;cursor:default}
+button.sel{opacity:1;outline:5px solid #1b2333}
+.ok{background:#22b573;color:#fff}.no{background:#ef4b4b;color:#fff}.chk{background:#ffc531;color:#1b2333}
+.main{background:linear-gradient(90deg,#3a6df0,#9b4dff);color:#fff;padding:18px 34px}
+.ghost{background:#eef1ff;color:#3a4ad0}
+.fb{margin-top:24px;padding:22px;border-radius:16px;font-size:1.05em;line-height:1.5;animation:pop .3s}
+.right{background:#e2f8ec;border-left:8px solid #22b573}.wrong{background:#fdeaea;border-left:8px solid #ef4b4b}
+.fb h3{margin:0 0 6px}
+.next{text-align:right;margin-top:18px}
+.tips{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin:24px 0}
+.tip{background:#f3f5ff;border-radius:16px;padding:18px 10px;text-align:center;font-weight:600}
+.tip span{display:block;font-size:2em;margin-bottom:6px}
+input{font:inherit;padding:14px 18px;border-radius:12px;border:2px solid #cfd6ef;width:100%;max-width:420px}
+label{font-weight:700;display:block;margin:14px 0 6px}
+.hint{font-size:.8em;color:#5c6680;margin-top:6px}
+.score{font-size:4em;font-weight:800;background:linear-gradient(90deg,#3a6df0,#9b4dff);-webkit-background-clip:text;background-clip:text;color:transparent;margin:0}
+table{width:100%;border-collapse:collapse;margin-top:20px;font-size:.85em}
+th,td{text-align:left;padding:10px;border-bottom:1px solid #e3e7f3;vertical-align:top}
+th{background:#f3f5ff}
+.actions{display:flex;flex-wrap:wrap;gap:12px;margin-top:24px}
+.streak{color:#e67e00}
+@media(max-width:760px){body{font-size:17px}.btns{grid-template-columns:1fr}.tips{grid-template-columns:repeat(2,1fr)}.post{flex-direction:column}}
+</style></head><body><div class="wrap">
+<header><div class="logo">🕵️</div><div><h1>Tietoetsivä</h1><p>Voiko tähän tietoon luottaa?</p></div></header>
+<div id="app"></div></div>
+<script>
+const C=[
+{i:"📱",t:"Somepostaus",m:"@terveysvinkit_2000 · 2 tuntia sitten · 48 000 tykkäystä",x:"LÄÄKÄRIT EIVÄT HALUA SINUN TIETÄVÄN TÄTÄ! 😱 Sitruunavesi parantaa flunssan yhdessä päivässä. Jaa ennen kuin tämä poistetaan!!!",a:"no",w:"Tekijä on tuntematon, lähteitä ei ole ja teksti yrittää herättää pelkoa ja kiirettä. Tykkäysten määrä ei kerro, onko tieto totta."},
+{i:"🏛️",t:"Viranomaisen sivu",m:"thl.fi · päivitetty tänä vuonna",x:"Kausi-influenssarokotteet: kenelle rokotetta suositellaan ja miten sen saa. Sivulla on yhteystiedot ja lähteet.",a:"ok",w:"Tekijä on tunnettu viranomainen, tieto on tuoretta ja lähteet näkyvät."},
+{i:"📰",t:"Uutinen",m:"Yle Uutiset · toimittajan nimi näkyy · julkaistu tänään",x:"Kaupunki päätti eilen rakentaa uuden uimahallin. Jutussa haastatellaan kahta valtuutettua eri puolueista.",a:"ok",w:"Tunnettu media, tekijä näkyy ja jutussa kuullaan useaa näkökulmaa. Tiedon voi tarkistaa kaupungin pöytäkirjoista."},
+{i:"🛒",t:"Mainos",m:"Sponsoroitu · SuperFit Oy",x:"Tutkitusti paras proteiinijauhe! 9/10 urheilijaa suosittelee. Osta nyt -30 %!",a:"no",w:"Tarkoitus on myydä. ”Tutkitusti” ilman tutkimusta on tyhjä sana. Keitä ne urheilijat olivat?"},
+{i:"🖼️",t:"Kuvakaappaus",m:"Jaettu WhatsApp-ryhmässä · ei alkuperäistä lähdettä",x:"Kuvakaappaus ”uutisesta”: Kela korottaa opintorahaa 40 eurolla kuukaudessa ensi vuoden alusta.",a:"chk",w:"Väite kuulostaa uskottavalta, mutta kuvakaappauksen voi muokata helposti, eikä siitä näe, mistä se on peräisin. Tarkista asia Kelan sivuilta tai luotettavasta uutismediasta ennen kuin uskot tai jaat sen."},
+{i:"🌐",t:"Wikipedia",m:"fi.wikipedia.org · artikkeli: Fotosynteesi",x:"Artikkelissa on 25 lähdeviitettä, osa tieteellisiin julkaisuihin.",a:"chk",w:"Wikipedia on hyvä aloituspaikka, mutta kuka tahansa voi muokata sitä. Tarkista tärkeät asiat lähdeviitteistä."},
+{i:"✈️",t:"Blogi",m:"Matkablogi · nimimerkki Reissu-Riikka · kirjoitettu 2014",x:"Maahantulosäännöt Thaimaahan: viisumia ei tarvita koskaan.",a:"no",w:"Teksti on yli 10 vuotta vanha eikä kirjoittaja ole asiantuntija. Säännöt muuttuvat – tarkista ulkoministeriön sivuilta."},
+{i:"🤖",t:"Tekoälyn vastaus",m:"Chatbotin vastaus · ei lähteitä",x:"Suomen pisin joki on Kemijoki, ja sen pituus on tarkalleen 512 km.",a:"chk",w:"Tekoäly voi keksiä tai sekoittaa lukuja. Tarkka tieto pitää tarkistaa luotettavasta lähteestä."},
+{i:"🎬",t:"Video",m:"1,2 milj. katselukertaa · kanava ilman yhteystietoja",x:"”Kuulaskeutuminen oli lavastettu – katso todisteet!” Videolla synkkää musiikkia ja epätarkkoja kuvia.",a:"no",w:"Katselukerrat eivät tee tiedosta totta. Ei asiantuntijoita, ei lähteitä, tunteisiin vetoava toteutus."},
+{i:"📘",t:"Oppikirja",m:"Kustantamon oppikirja · tekijöinä opettajia · painettu 2024",x:"Luku: Työsopimuksen tekeminen ja työntekijän oikeudet.",a:"ok",w:"Tekijät tunnetaan, kirja on toimitettu ja tuore. Lakimuutokset kannattaa silti tarkistaa esim. tyosuojelu.fi-sivulta."},
+{i:"💬",t:"Keskustelupalsta",m:"Nimetön kirjoittaja · keskustelufoorumi",x:"”Mun serkku on lääkäri ja sen mukaan energiajuomat ei vaikuta uneen yhtään.”",a:"no",w:"”Serkku sanoi” ei ole lähde. Kirjoittajaa ei tunneta eikä väitettä voi tarkistaa."},
+{i:"📊",t:"Tilasto",m:"Tilastokeskus · stat.fi",x:"Väestörakenne: Suomen väkiluku vuoden lopussa, taulukko ja selitykset.",a:"ok",w:"Virallinen tilastoviranomainen. Menetelmät ja päivitysaika on kerrottu."},
+{i:"🎓",t:"Tutkimusuutinen",m:"Yliopiston tiedote · tutkijan nimi ja julkaisu mainittu",x:"Tutkimuksessa seurattiin 3 000 nuoren unta kahden vuoden ajan. Ruutuaika illalla oli yhteydessä lyhyempiin yöuniin.",a:"ok",w:"Tekijä ja julkaisu tunnetaan, tutkimus on iso ja pitkä. Tulos kertoo yhteydestä, ei välttämättä syystä."},
+{i:"📸",t:"Kaverin story",m:"Instagram-tarina · kaverisi jakama · ei linkkiä",x:"”Kuulin et kauppakeskuksen elokuvateatteri suljetaan ensi kuussa 😢”",a:"chk",w:"Kaveri ei valehtele tahallaan, mutta hän on itsekin kuullut asian jostain muualta. Tarkista asia elokuvateatterin omilta sivuilta tai paikallisuutisista."},
+{i:"💰",t:"Hintavertailu",m:"Hintavertailusivusto · päivitetty 3 kuukautta sitten",x:"Uusin puhelinmalli on halvin Kauppa X:ssä: 299 €.",a:"chk",w:"Hintavertailu on hyödyllinen, mutta tieto on kolme kuukautta vanhaa ja hinnat muuttuvat nopeasti. Tarkista hinta kaupan omilta sivuilta ennen ostoa."},
+{i:"🛡️",t:"Turvallisuusohje",m:"Kyberturvallisuuskeskus · kyberturvallisuuskeskus.fi · päivitetty tässä kuussa",x:"Varoitus: liikkeellä on huijausviestejä, joissa pyydetään vahvistamaan pankkitunnukset linkin kautta. Pankki ei koskaan pyydä tunnuksia viestillä.",a:"ok",w:"Tekijä on virallinen viranomainen, ohje on tuore, ja saman tiedon löytää myös pankkien omilta sivuilta."},
+{i:"🌦️",t:"Sääennuste",m:"Ilmatieteen laitos · ilmatieteenlaitos.fi · päivitetty tunti sitten",x:"Huomenna Jyväskylässä lumisadetta, lämpötila -2…0 astetta. Liukkausvaroitus aamulla.",a:"ok",w:"Ilmatieteen laitos on virallinen asiantuntija, ja ennuste on juuri päivitetty. Ennuste on silti ennuste – se voi muuttua."},
+{i:"💸",t:"Työtarjous",m:"Tekstiviesti tuntemattomasta numerosta",x:"Hei! Etsimme kotoa tehtävään osa-aikatyöhön. Palkka 300 €/päivä, ei kokemusta vaadita. Vastaa WhatsAppiin ja lähetä kuva henkilökortistasi.",a:"no",w:"Liian hyvää ollakseen totta. Tuntematon lähettäjä, epärealistinen palkka ja pyyntö lähettää henkilökortti ovat tyypillisiä huijauksen merkkejä."},
+{i:"🧪",t:"Tuotearvostelut",m:"Verkkokauppa · 500 arvostelua, kaikki 5 tähteä · julkaistu samana päivänä",x:"”Paras ihonhoitotuote ikinä!!” ”Mahtava!!!” ”Suosittelen kaikille!!” – iho puhdistuu viikossa.",a:"no",w:"Pelkät viiden tähden arviot samana päivänä ja samanlaiset lyhyet kehut viittaavat ostettuihin tai tekaistuihin arvosteluihin."},
+{i:"🔥",t:"Otsikko",m:"Klikkiuutissivusto · ei tekijää",x:"SHOKKI: Tämä tavallinen ruoka tuhoaa aivosi – et usko numeroa 7!",a:"no",w:"Klikkiotsikko houkuttelee klikkaamaan, ei kerro tietoa. Tekijää ja lähteitä ei ole."}
+];
+const L={ok:"✅ Luotettava",no:"❌ Epäluotettava",chk:"🔎 Tarkista lisää"};
+const N=10;let o,i,p,s,best,log,nimi="";
+const shuffle=a=>a.map(v=>[Math.random(),v]).sort((x,y)=>x[0]-y[0]).map(v=>v[1]);
+const esc=t=>t.replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+function intro(){app.innerHTML=`<div class="card"><h2 style="margin-top:0">Sinusta tulee tietoetsivä!</h2>
+<p>Saat ${N} tietolähdettä. Päätä jokaisesta, onko se <b>luotettava</b>, <b>epäluotettava</b> vai pitääkö asia <b>tarkistaa lisää</b>.</p>
+<div class="tips"><div class="tip"><span>👤</span>Kuka tekijä?</div><div class="tip"><span>📅</span>Milloin julkaistu?</div><div class="tip"><span>🎯</span>Mikä tarkoitus?</div><div class="tip"><span>📚</span>Onko lähteitä?</div><div class="tip"><span>🔁</span>Löytyykö muualta?</div></div>
+<div class="fb right" style="margin:0 0 10px"><h3>📋 Tehtävä</h3>Pelaa niin monta kertaa, että saat <b>kaikki oikein</b>. Ota lopuksi tulossivusta <b>kuvakaappaus</b> ja palauta se <b>Moodleroomsin kurssialueelle</b>.</div>
+<label for="n">Etsivänimesi (nimimerkki)</label><input id="n" placeholder="esim. Agentti Kettu" maxlength="30" value="${esc(nimi)}">
+<div class="hint">Älä käytä oikeaa nimeäsi.</div>
+<div style="margin-top:26px"><button class="main" onclick="start()">Aloita peli ➜</button></div></div>`}
+function start(){nimi=document.getElementById('n').value.trim()||"Nimetön etsivä";
+o=shuffle(C).slice(0,N);i=0;p=0;s=0;best=0;log=[];show()}
+function show(){if(i>=N)return end();const c=o[i];app.innerHTML=`<div class="card">
+<div class="top"><span class="badge">Tehtävä ${i+1} / ${N}</span><span>${s>1?`<span class="streak">🔥 ${s} putkeen</span> · `:""}⭐ ${p} pistettä</span></div>
+<div class="progress"><div style="width:${i/N*100}%"></div></div>
+<div class="post"><div class="icon">${c.i}</div><div><span class="type">${c.t}</span><div class="meta">${c.m}</div><div class="text">${c.x}</div></div></div>
+<div class="btns" id="b"><button class="ok" onclick="ans('ok',this)">✅ Luotettava</button><button class="no" onclick="ans('no',this)">❌ Epäluotettava</button><button class="chk" onclick="ans('chk',this)">🔎 Tarkista lisää</button></div><div id="f"></div></div>`}
+function ans(v,el){const c=o[i],r=v===c.a;if(r){p++;s++;best=Math.max(best,s)}else s=0;log.push({c,v,r});
+document.querySelectorAll('#b button').forEach(b=>b.disabled=true);el.classList.add('sel');
+f.innerHTML=`<div class="fb ${r?'right':'wrong'}"><h3>${r?'🎉 Oikein!':'🤔 Ei aivan – oikea vastaus: '+L[c.a]}</h3>${c.w}</div>
+<div class="next"><button class="main" onclick="i++;show()">${i+1<N?'Seuraava ➜':'Katso tulos 🏁'}</button></div>`;
+f.scrollIntoView({behavior:"smooth",block:"nearest"})}
+function grade(){return p>=9?"Huippuetsivä 🏆":p>=7?"Taitava etsivä 🥇":p>=5?"Etsivä harjoittelee 🔍":"Etsivän alku 🌱"}
+function pvm(){return new Date().toLocaleString("fi-FI",{dateStyle:"short",timeStyle:"short"})}
+function end(){const rows=log.map((l,k)=>`<tr><td>${k+1}</td><td>${l.c.i} ${l.c.t}</td><td>${L[l.v]}</td><td>${L[l.c.a]}</td><td>${l.r?'✔️':'✖️'}</td></tr>`).join("");
+app.innerHTML=`<div class="card"><h2 style="margin:0">Tulos – ${esc(nimi)}</h2>
+<p style="margin:4px 0 0;color:#5c6680">${pvm()}</p>
+<p class="score">${p} / ${N}</p><p style="font-size:1.3em;margin:0"><b>${grade()}</b> · Pisin oikeiden putki: ${best}</p>
+${p===N?'<div class="fb right"><h3>🏆 Kaikki oikein!</h3>Ota tästä sivusta kuvakaappaus ja palauta se Moodleroomsin kurssialueelle.</div>':'<div class="fb wrong"><h3>📸 Ota tästä sivusta kuvakaappaus ja palauta se Moodleroomsiin.</h3>💪 Koeta kuitenkin saada kaikki 10 oikein! Katso alta, mitkä menivät väärin, ja pelaa uudelleen.</div>'}
+<table><tr><th>#</th><th>Lähde</th><th>Sinun vastaus</th><th>Oikea vastaus</th><th></th></tr>${rows}</table>
+<div class="actions"><button class="main" onclick="intro()">🔁 Pelaa uudelleen</button></div></div>`}
+intro();
+</script></body></html>
